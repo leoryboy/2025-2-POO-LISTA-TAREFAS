@@ -1,6 +1,8 @@
+using MySql.Data.MySqlClient;
 public class Operacoes
 {
-    private string connectionString = "";
+    private string connectionString = 
+    @"server=phpmyadmin.uni9.marize.us;User ID=user_poo;password=S3nh4!F0rt3;database=user_poo;";
     public int Criar(Tarefa tarefa)
     {
         using(var conexao = new MySqlConnection(connectionString))
@@ -27,8 +29,33 @@ public class Operacoes
         return null;
     }
 
-    public List<Tarefa> Listar()
+    public IList<Tarefa> Listar()
     {
+        using(var conexao = new MySqlConnection(connectionString))
+        {
+            var sql = "SELECT id, nome, descricao, datacriacao, dataExecucao, status FROM 'tarefa'";
+
+            using (var cmd = new MySqlCommand(sql, conexao))
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var tarefa = new Tarefa
+                    {
+                        id = reader.GetInt32("id"),
+                        Nome = reader.GetString("nome"),
+                        Descricao = reader.GetString("descricao"),
+                        DataCriacao = reader.GetDateTime("dataCriacao"),
+                        DataExecucao = reader.IsDBNull(reader.GetOrdinal("dataExecucao"))
+                            ? (DateTime?)null
+                            : reader.GetDateTime("dataExecucao"),
+                        Status = reader.GetInt32("status")
+                    };
+                    tarefas.Add(tarefa);
+                }
+            }
+        }
+        return tarefa;
         return Array.Empty<Tarefa>();
     }
 
